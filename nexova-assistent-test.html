@@ -315,7 +315,8 @@ async function vælgKanal(btn) {
         model: 'claude-sonnet-4-6',
         max_tokens: 1024,
         system: SYSTEM,
-        messages: [{ role: 'user', content: `Kanal: ${kanal}\n\nBudskab: ${budskab}` }]
+        messages: [{ role: 'user', content: `Kanal: ${kanal}\n\nBudskab: ${budskab}` }],
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }]
       })
     });
 
