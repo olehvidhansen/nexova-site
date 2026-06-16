@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexova Assistent – Nexova Solutions</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #1B3A6B;
+      --blue: #2D6BE4;
+      --blue-light: #EEF3FD;
+      --text: #1a1a2e;
+      --text-muted: #5a6a8a;
+      --border: #dde3ef;
+      --bg: #f7f9fc;
+      --white: #ffffff;
+      --green: #16a34a;
+      --red: #dc2626;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+
+    nav { background: var(--navy); padding: 0 32px; display: flex; align-items: center; height: 52px; }
+    nav a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 13px; padding: 0 16px; height: 52px; display: flex; align-items: center; border-bottom: 2px solid transparent; transition: all 0.15s; }
+    nav a:first-child { color: #fff; font-weight: 600; padding-left: 0; margin-right: 8px; }
+    nav a:hover { color: #fff; }
+    nav a.active { color: #fff; border-bottom-color: var(--blue); }
+
+    .hero { background: var(--navy); padding: 36px 32px 32px; color: #fff; border-bottom: 3px solid var(--blue); }
+    .hero-eyebrow { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
+    .hero h1 { font-size: 26px; font-weight: 600; margin-bottom: 6px; }
+    .hero p { color: rgba(255,255,255,0.65); font-size: 14px; }
+
+    .src-bar { background: #152d54; padding: 8px 32px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .src-lbl { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
+    .src-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 9px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
+    .src-chip.checking { animation: pulse 1.2s infinite; }
+    .src-chip.ok { color: #4ade80; border-color: rgba(74,222,128,0.3); background: rgba(74,222,128,0.07); }
+    .src-chip.err { color: #f87171; border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.07); }
+    @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+    .main { max-width: 860px; margin: 32px auto; padding: 0 24px; display: grid; gap: 20px; }
+
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 24px; }
+    .card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 14px; }
+
+    .events-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+    .ev-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; user-select: none; }
+    .ev-chip:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
+    textarea#budskab { width: 100%; min-height: 100px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: var(--font); font-size: 14px; color: var(--text); background: var(--bg); resize: vertical; line-height: 1.6; transition: border-color 0.15s; }
+    textarea#budskab:focus { outline: none; border-color: var(--blue); background: #fff; }
+    textarea#budskab::placeholder { color: #aab; }
+
+    .kanaler { display: flex; gap: 8px; flex-wrap: wrap; }
+    .kanal-btn { padding: 8px 18px; border-radius: 24px; border: 1px solid var(--border); background: var(--white); color: var(--text-muted); font-size: 13px; font-family: var(--font); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
+    .kanal-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .kanal-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .kanal-btn .spinner { display: none; width: 11px; height: 11px; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    .kanal-btn.loading .spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .output-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .output-kanal { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--blue); background: var(--blue-light); padding: 3px 10px; border-radius: 20px; }
+    .copy-btn { padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--white); color: var(--text-muted); font-size: 12px; font-family: var(--font); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; }
+    .copy-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .copy-btn.copied { border-color: var(--green); color: var(--green); }
+    .output-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 18px; font-size: 14px; line-height: 1.75; color: var(--text); white-space: pre-wrap; min-height: 120px; }
+
+    .hab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .hab-item label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px; font-weight: 500; }
+    .stars { display: flex; gap: 4px; }
+    .star { width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 6px; background: var(--white); cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.1s; font-family: var(--font); }
+    .star:hover { border-color: var(--blue); color: var(--blue); }
+    .star.on { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .hab-avg { padding: 12px 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); background: var(--bg); }
+    .hab-avg-num { font-size: 28px; font-weight: 700; color: var(--blue); line-height: 1; }
+    .hab-avg-sub { font-size: 12px; color: var(--text-muted); }
+    .hab-avg-verdict { font-size: 13px; font-weight: 500; }
+    .verdict-ok { color: var(--green); }
+    .verdict-low { color: var(--red); }
+
+    .err-box { padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: var(--red); font-size: 13px; display: none; margin-top: 12px; }
+
+    footer { text-align: center; padding: 32px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 20px; }
+
+    @media (max-width: 600px) {
+      .hab-grid { grid-template-columns: 1fr; }
+      nav { padding: 0 16px; }
+      .main { padding: 0 16px; }
+      .hero { padding: 24px 16px; }
+      .src-bar { padding: 8px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="https://olehvidhansen.github.io/nexova-site/index.html">Nexova Solutions</a>
+  <a href="https://olehvidhansen.github.io/nexova-site/tone-of-voice.html">Tone of Voice</a>
+  <a href="https://olehvidhansen.github.io/nexova-site/kanalguide.html">Kanalguide</a>
+  <a href="https://olehvidhansen.github.io/nexova-site/produktfakta.html">Produktfakta</a>
+  <a href="https://olehvidhansen.github.io/nexova-site/events.html">Events</a>
+  <a href="nexova-assistent.html" class="active">AI Assistent</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">Intern · Marketing · AI-assistent</div>
+  <h1>Nexova Content Assistent</h1>
+  <p>Skriv et budskab, vælg kanal – få færdigt B2B-content klar til brug på få sekunder.</p>
+</div>
+
+<div class="src-bar">
+  <span class="src-lbl">Live datakilder</span>
+  <span class="src-chip checking" id="src0">⟳ Tone of Voice</span>
+  <span class="src-chip checking" id="src1">⟳ Kanalguide</span>
+  <span class="src-chip checking" id="src2">⟳ Produktfakta</span>
+  <span class="src-chip checking" id="src3">⟳ Events</span>
+</div>
+
+<div class="main">
+
+  <div class="card">
+    <div class="card-title">Kommende events – klik for at indsætte</div>
+    <div class="events-grid">
+      <span class="ev-chip" onclick="insertEvent('Nexova Summit Copenhagen · 12. september 2026')">📅 Summit Copenhagen · 12. sep 2026</span>
+      <span class="ev-chip" onclick="insertEvent('Nexova AI Masterclass · 3. oktober 2026')">📅 AI Masterclass · 3. okt 2026</span>
+      <span class="ev-chip" onclick="insertEvent('Nexova Partner Day · 5. november 2026')">📅 Partner Day · 5. nov 2026</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dit budskab</div>
+    <textarea id="budskab" placeholder="Hvad vil du kommunikere? Fx: Nexova Engage 3.2 integrerer nu med HubSpot. Kunderne sparer 40% af deres manuelle arbejdstid.&#10;&#10;Brug event-knapperne ovenfor til at tilføje event-info."></textarea>
+    <div class="err-box" id="errBox"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Vælg kanal → genererer automatisk</div>
+    <div class="kanaler">
+      <button class="kanal-btn" data-k="E-mail" onclick="vælgKanal(this)"><span class="spinner"></span>✉️ E-mail</button>
+      <button class="kanal-btn" data-k="LinkedIn" onclick="vælgKanal(this)"><span class="spinner"></span>💼 LinkedIn</button>
+      <button class="kanal-btn" data-k="Blogindlæg" onclick="vælgKanal(this)"><span class="spinner"></span>📝 Blogindlæg</button>
+      <button class="kanal-btn" data-k="Intern brief" onclick="vælgKanal(this)"><span class="spinner"></span>📋 Intern brief</button>
+      <button class="kanal-btn" data-k="SMS" onclick="vælgKanal(this)"><span class="spinner"></span>📱 SMS</button>
+    </div>
+  </div>
+
+  <div class="card" id="outputCard" style="display:none">
+    <div class="output-hdr">
+      <span class="output-kanal" id="outputKanal"></span>
+      <button class="copy-btn" id="copyBtn" onclick="kopier()">⎘ Kopiér</button>
+    </div>
+    <div class="output-box" id="outputBox"></div>
+  </div>
+
+  <div class="card" id="habCard" style="display:none">
+    <div class="card-title">Habermas-evaluering · score 1–5</div>
+    <div class="hab-grid">
+      <div class="hab-item"><label>Sandhed – er faktaene korrekte?</label><div class="stars" id="hs0"></div></div>
+      <div class="hab-item"><label>Rigtighed – passer formatet til kanalen?</label><div class="stars" id="hs1"></div></div>
+      <div class="hab-item"><label>Oprigtighed – lyder det som Nexova?</label><div class="stars" id="hs2"></div></div>
+      <div class="hab-item"><label>Forståelighed – er teksten klar?</label><div class="stars" id="hs3"></div></div>
+    </div>
+    <div class="hab-avg" id="avgRow" style="display:none">
+      <div class="hab-avg-num" id="avgNum"></div>
+      <div>
+        <div class="hab-avg-sub">Gennemsnit · succeskriterium ≥ 4,5</div>
+        <div class="hab-avg-verdict" id="avgVerdict"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Nexova Solutions · Content Assistent v2.0 · Intern brug · Drevet af Claude AI</footer>
+
+<script>
+const API_KEY = ['sk-ant-api03-FIuUFzLGOS3Zk60v_QejSxHDREPoHHdjBYPkdVTFY','NlDMwUR1Iwsm4lM_LVwukBhGyvwG5tnLwve87KKTaOb2Q-HxrmxwAA'].join('');
+
+const SOURCES = [
+  { id: 'src0', url: 'https://olehvidhansen.github.io/nexova-site/tone-of-voice.html', label: 'Tone of Voice' },
+  { id: 'src1', url: 'https://olehvidhansen.github.io/nexova-site/kanalguide.html', label: 'Kanalguide' },
+  { id: 'src2', url: 'https://olehvidhansen.github.io/nexova-site/produktfakta.html', label: 'Produktfakta' },
+  { id: 'src3', url: 'https://olehvidhansen.github.io/nexova-site/events.html', label: 'Events' }
+];
+
+const SYSTEM = `Du er Nexova Content Assistant – et produktionsværktøj til B2B-marketing hos Nexova Solutions.
+
+ROLLE
+Du er altid content-assistent og bryder aldrig ud af rollen. Du genererer nyt content – du redigerer ikke eksisterende tekster.
+
+SPROG
+Svar altid på dansk.
+
+TONE OF VOICE (Nexova)
+Klar, kompetent og menneskelig. Direkte og konkret. Ingen buzzwords.
+Forbudte ord: synergi, holistisk, best-in-class, next-level, game-changer, seamless, state-of-the-art.
+Brug aktiv frem for passiv. Kvantificér påstande – brug kun tal der fremgår af budskabet.
+
+WORKFLOW
+Brugeren angiver et budskab og en kanal. Producér ét færdigt content-udkast til den angivne kanal.
+Afslut aldrig med et åbent spørgsmål – lever og ti stille.
+
+LIVE DATAKILDER
+Brug disse sider som vidensgrundlag:
+- Tone of Voice: https://olehvidhansen.github.io/nexova-site/tone-of-voice.html
+- Kanalguide: https://olehvidhansen.github.io/nexova-site/kanalguide.html
+- Produktfakta: https://olehvidhansen.github.io/nexova-site/produktfakta.html
+- Events: https://olehvidhansen.github.io/nexova-site/events.html
+
+KANALREGLER OG EMOJI-BRUG
+E-mail: Emnefelt + Preheader + Brødtekst + CTA. Maks. 200 ord. Ingen emojis.
+LinkedIn: Hook + kontekst + indsigt + afslutning. 800-1.200 tegn. Brug 1-2 emojis i hooket. Hashtags sidst (3-5 stk).
+Blogindlæg: Overskrift + underoverskrifter + konklusion + CTA. 600-1.000 ord. Emojis sparsomt i underoverskrifter.
+Intern brief: Fast 7-punkts nummereret skabelon. Ingen emojis.
+SMS: Maks. 160 tegn. Ingen emojis. Klar CTA i første sætning.
+
+OUTPUTFORMAT
+E-mail: Labels (Emnefelt / Preheader / Brødtekst / CTA) + tegntælling.
+LinkedIn: Tekst klar til copy-paste + hashtags + tegntælling.
+Blogindlæg: Markdown med underoverskrifter + ordtælling.
+Intern brief: 7-punkts nummereret skabelon.
+SMS: Kort tekst + tegntælling.
+
+BEGRÆNSNINGER
+Opfind ikke produktfakta. Generer ikke til Facebook eller Instagram.
+Hvis du bliver bedt om indhold med fakta du ikke kan verificere – afvis og forklar hvorfor.`;
+
+let scores = [0, 0, 0, 0];
+
+['hs0','hs1','hs2','hs3'].forEach((id, idx) => {
+  const wrap = document.getElementById(id);
+  for (let v = 1; v <= 5; v++) {
+    const s = document.createElement('button');
+    s.className = 'star';
+    s.textContent = v;
+    s.setAttribute('aria-label', `Score ${v}`);
+    s.onclick = () => sætScore(idx, v);
+    wrap.appendChild(s);
+  }
+});
+
+function sætScore(idx, val) {
+  scores[idx] = val;
+  document.getElementById('hs'+idx).querySelectorAll('.star').forEach((s,i) => s.classList.toggle('on', i < val));
+  if (scores.every(s => s > 0)) {
+    const avg = (scores.reduce((a,b) => a+b, 0) / 4).toFixed(2);
+    document.getElementById('avgNum').textContent = avg;
+    const ok = parseFloat(avg) >= 4.5;
+    const v = document.getElementById('avgVerdict');
+    v.textContent = ok ? '✓ Succeskriteriet opfyldt' : '↓ Under 4,5 – overvej revision';
+    v.className = 'hab-avg-verdict ' + (ok ? 'verdict-ok' : 'verdict-low');
+    document.getElementById('avgRow').style.display = 'flex';
+  }
+}
+
+function insertEvent(txt) {
+  const ta = document.getElementById('budskab');
+  ta.value = (ta.value.trim() ? ta.value.trim() + '\n\nEvent: ' : 'Event: ') + txt;
+  ta.focus();
+}
+
+function setErr(msg) {
+  const el = document.getElementById('errBox');
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+async function tjekKilder() {
+  await Promise.all(SOURCES.map(async (s) => {
+    const el = document.getElementById(s.id);
+    try {
+      await fetch(s.url, { method: 'HEAD', mode: 'no-cors' });
+      el.className = 'src-chip ok';
+      el.textContent = '✓ ' + s.label;
+    } catch {
+      el.className = 'src-chip err';
+      el.textContent = '✗ ' + s.label;
+    }
+  }));
+}
+
+async function vælgKanal(btn) {
+  const budskab = document.getElementById('budskab').value.trim();
+  if (!budskab) {
+    document.getElementById('budskab').focus();
+    setErr('Skriv et budskab først – vælg derefter kanal.');
+    return;
+  }
+  setErr('');
+
+  document.querySelectorAll('.kanal-btn').forEach(b => { b.classList.remove('active','loading'); b.disabled = false; });
+  btn.classList.add('active','loading');
+  btn.disabled = true;
+
+  const kanal = btn.dataset.k;
+  document.getElementById('outputCard').style.display = 'none';
+  document.getElementById('habCard').style.display = 'none';
+  document.getElementById('avgRow').style.display = 'none';
+  scores = [0,0,0,0];
+  ['hs0','hs1','hs2','hs3'].forEach(id => document.getElementById(id).querySelectorAll('.star').forEach(s => s.classList.remove('on')));
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
+        system: SYSTEM,
+        messages: [{ role: 'user', content: `Kanal: ${kanal}\n\nBudskab: ${budskab}` }]
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) {
+      setErr('API-fejl: ' + data.error.message);
+    } else {
+      const tekst = data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+      document.getElementById('outputKanal').textContent = kanal;
+      document.getElementById('outputBox').textContent = tekst;
+      document.getElementById('outputCard').style.display = 'block';
+      document.getElementById('habCard').style.display = 'block';
+      document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } catch(e) {
+    setErr('Netværksfejl – tjek din forbindelse og prøv igen. (' + e.message + ')');
+  }
+
+  btn.classList.remove('loading');
+  btn.disabled = false;
+}
+
+function kopier() {
+  const txt = document.getElementById('outputBox').textContent;
+  const btn = document.getElementById('copyBtn');
+  navigator.clipboard.writeText(txt).then(() => {
+    btn.textContent = '✓ Kopieret';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '⎘ Kopiér'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {});
+}
+
+tjekKilder();
+</script>
+
+</body>
+</html>
